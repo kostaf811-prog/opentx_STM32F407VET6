@@ -17,14 +17,14 @@ jobs:
 
       - name: Configure and Build OpenTX
         run: |
-          # Передаем флаг отключения контроля VBUS через CMAKE_CXX_FLAGS
+          # Включаем макросы принудительного отключения контроля VBUS (VBUS_DISABLE)
           cmake -B build \
             -DCMAKE_SYSTEM_NAME=Generic \
             -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
             -DCMAKE_C_COMPILER=arm-none-eabi-gcc \
             -DCMAKE_CXX_COMPILER=arm-none-eabi-g++ \
-            -DCMAKE_CXX_FLAGS="-DNO_VBUS_DETECTION -DUSE_USB_OTG_FS" \
-            -DCMAKE_C_FLAGS="-DNO_VBUS_DETECTION -DUSE_USB_OTG_FS" \
+            -DCMAKE_CXX_FLAGS="-DOTG_FS_VBUS_DISABLE -DUSE_USB_OTG_FS" \
+            -DCMAKE_C_FLAGS="-DOTG_FS_VBUS_DISABLE -DUSE_USB_OTG_FS" \
             -DPCB=X9D+ \
             -DDISABLE_COMPANION=YES \
             -DLCD=ILI9341 \
@@ -33,7 +33,6 @@ jobs:
           
           # Запускаем компиляцию прошивки
           cmake --build build -j$(nproc)
-
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
