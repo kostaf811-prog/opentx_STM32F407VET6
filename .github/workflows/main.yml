@@ -10,17 +10,15 @@ jobs:
         with:
           ref: '2.3'
 
-      - name: Download Toolchain and Compile
+      - name: Download Toolchain 2019 and Compile
         run: |
-          # 1. Скачиваем официальный Linux-компилятор ARM GCC
-          curl -L -s "https://arm.com" | tar -xJ
+          # 1. Скачиваем старый архив компилятора GCC 8 (2019 год)
+          curl -L -s "https://arm.com" | tar -xj
           
-          # 2. Настраиваем CMake с флагами подавления ошибок старого кода Си++
+          # 2. Настраиваем CMake с точным указанием старого компилятора
           cmake -B build \
-            -DCMAKE_C_COMPILER=$(pwd)/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc \
-            -DCMAKE_CXX_COMPILER=$(pwd)/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-g++ \
-            -DCMAKE_CXX_FLAGS="-fpermissive -w" \
-            -DCMAKE_C_FLAGS="-w" \
+            -DCMAKE_C_COMPILER=$(pwd)/gcc-arm-none-eabi-8-2019-q3-update/bin/arm-none-eabi-gcc \
+            -DCMAKE_CXX_COMPILER=$(pwd)/gcc-arm-none-eabi-8-2019-q3-update/bin/arm-none-eabi-g++ \
             -DPCB=STM32F4VE -DPCBREV= -DDISABLE_COMPANION=YES -DLCD=ILI9341
           
           # 3. Собираем проект
@@ -33,5 +31,3 @@ jobs:
           path: |
             build/*.bin
             build/*.hex
-
-
