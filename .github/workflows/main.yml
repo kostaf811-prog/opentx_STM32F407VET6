@@ -3,18 +3,25 @@ on: workflow_dispatch
 
 jobs:
   build:
-    runs-on: ubuntu-22.04 # Используем более стабильную версию ОС
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2  # Обновлено: теперь без предупреждений Node.js
         with:
           ref: '2.3'
 
-      - name: Install Correct Compiler and Build
+      - name: Download Toolchain and Compile
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-arm-none-eabi maxmod python3-pip
-          cmake -B build -DPCB=STM32F4VE -DPCBREV= -DDISABLE_COMPANION=YES -DLCD=ILI9341
+          # 1. Скачиваем официальный Linux-компилятор ARM GCC напрямую с серверов ARM
+          curl -L -s "https://arm.com" | tar -xJ
+          
+          # 2. Прописываем пути к компиляторам и запускаем конфигурацию платы
+          cmake -B build \
+            -DCMAKE_C_COMPILER=$(pwd)/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc \
+            -DCMAKE_CXX_COMPILER=$(pwd)/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-g++ \
+            -DPCB=STM32F4VE -DPCBREV= -DDISABLE_COMPANION=YES -DLCD=ILI9341
+          
+          # 3. Собираем проект
           cmake --build build -j$(nproc)
 
       - name: Upload Artifact
@@ -24,3 +31,4 @@ jobs:
           path: |
             build/*.bin
             build/*.hex
+
