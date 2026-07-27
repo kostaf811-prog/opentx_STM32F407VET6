@@ -17,8 +17,9 @@ jobs:
 
       - name: Configure and Build OpenTX
         run: |
-          # Настраиваем проект под плату X9D+ с использованием ARM-компилятора
+          # Включаем кросс-компиляцию с помощью -DCMAKE_SYSTEM_NAME=Generic
           cmake -B build \
+            -DCMAKE_SYSTEM_NAME=Generic \
             -DCMAKE_C_COMPILER=arm-none-eabi-gcc \
             -DCMAKE_CXX_COMPILER=arm-none-eabi-g++ \
             -DPCB=X9D+ \
@@ -27,7 +28,7 @@ jobs:
             -DSERVO_TESTER=NO \
             -DHELI=NO
           
-          # Запускаем компиляцию
+          # Запускаем компиляцию прошивки
           cmake --build build -j$(nproc)
 
       - name: Upload Artifact
