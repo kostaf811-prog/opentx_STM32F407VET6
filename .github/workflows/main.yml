@@ -10,18 +10,23 @@ jobs:
         with:
           ref: '2.3'
 
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip python3-pillow qttools5-dev-tools qtbase5-dev
+
       - name: Download Toolchain 2019 and Compile
         run: |
-          # 1. Скачиваем старый архив компилятора GCC 8 (2019 год)
+          # 1. Скачиваем стабильный компилятор GCC 8 (2019 год)
           curl -L -s "https://arm.com" | tar -xj
           
-          # 2. Настраиваем CMake с точным указанием старого компилятора
+          # 2. Настраиваем CMake с флагами архитектуры и генерации графики дисплея
           cmake -B build \
             -DCMAKE_C_COMPILER=$(pwd)/gcc-arm-none-eabi-8-2019-q3-update/bin/arm-none-eabi-gcc \
             -DCMAKE_CXX_COMPILER=$(pwd)/gcc-arm-none-eabi-8-2019-q3-update/bin/arm-none-eabi-g++ \
             -DPCB=STM32F4VE -DPCBREV= -DDISABLE_COMPANION=YES -DLCD=ILI9341
           
-          # 3. Собираем проект
+          # 3. Финальная сборка бинарника
           cmake --build build -j$(nproc)
 
       - name: Upload Artifact
