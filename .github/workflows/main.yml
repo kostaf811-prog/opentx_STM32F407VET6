@@ -17,9 +17,10 @@ jobs:
 
       - name: Configure and Build OpenTX
         run: |
-          # Включаем кросс-компиляцию с помощью -DCMAKE_SYSTEM_NAME=Generic
+          # Отключаем линковку тестового файла с помощью CMAKE_TRY_COMPILE_TARGET_TYPE
           cmake -B build \
             -DCMAKE_SYSTEM_NAME=Generic \
+            -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
             -DCMAKE_C_COMPILER=arm-none-eabi-gcc \
             -DCMAKE_CXX_COMPILER=arm-none-eabi-g++ \
             -DPCB=X9D+ \
