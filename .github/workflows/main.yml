@@ -6,19 +6,21 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.2.2  # Обновлено: теперь без предупреждений Node.js
+        uses: actions/checkout@v4.2.2
         with:
           ref: '2.3'
 
       - name: Download Toolchain and Compile
         run: |
-          # 1. Скачиваем официальный Linux-компилятор ARM GCC напрямую с серверов ARM
+          # 1. Скачиваем официальный Linux-компилятор ARM GCC
           curl -L -s "https://arm.com" | tar -xJ
           
-          # 2. Прописываем пути к компиляторам и запускаем конфигурацию платы
+          # 2. Настраиваем CMake с флагами подавления ошибок старого кода Си++
           cmake -B build \
             -DCMAKE_C_COMPILER=$(pwd)/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc \
             -DCMAKE_CXX_COMPILER=$(pwd)/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-g++ \
+            -DCMAKE_CXX_FLAGS="-fpermissive -w" \
+            -DCMAKE_C_FLAGS="-w" \
             -DPCB=STM32F4VE -DPCBREV= -DDISABLE_COMPANION=YES -DLCD=ILI9341
           
           # 3. Собираем проект
@@ -31,4 +33,5 @@ jobs:
           path: |
             build/*.bin
             build/*.hex
+
 
