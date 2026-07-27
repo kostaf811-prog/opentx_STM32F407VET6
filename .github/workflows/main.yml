@@ -10,29 +10,27 @@ jobs:
         with:
           ref: '2.3'
 
-      - name: Install System Dependencies
+      - name: Install Compiler and Build via Make
         run: |
+          # 1. Ставим проверенный компилятор напрямую из репозитория системы
           sudo apt-get update
-          sudo apt-get install -y python3-pip python3-pillow qttools5-dev-tools qtbase5-dev
-
-      - name: Download Toolchain 2019 and Compile
-        run: |
-          # 1. Скачиваем стабильный компилятор GCC 8 (2019 год)
-          curl -L -s "https://arm.com" | tar -xj
+          sudo apt-get install -y gcc-arm-none-eabi python3-pillow python3-pip
           
-          # 2. Настраиваем CMake с флагами архитектуры и генерации графики дисплея
-          cmake -B build \
-            -DCMAKE_C_COMPILER=$(pwd)/gcc-arm-none-eabi-8-2019-q3-update/bin/arm-none-eabi-gcc \
-            -DCMAKE_CXX_COMPILER=$(pwd)/gcc-arm-none-eabi-8-2019-q3-update/bin/arm-none-eabi-g++ \
-            -DPCB=STM32F4VE -DPCBREV= -DDISABLE_COMPANION=YES -DLCD=ILI9341
-          
-          # 3. Финальная сборка бинарника
-          cmake --build build -j$(nproc)
+          # 2. Переходим в папку с исходниками радио и запускаем Make в обход CMake
+          cd radio/src
+          make \
+            -j$(nproc) \
+            PCB=STM32F4VE \
+            PCBREV= \
+            DISABLE_COMPANION=YES \
+            LCD=ILI9341
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: opentx-stm32f407-firmware
           path: |
-            build/*.bin
-            build/*.hex
+            radio/src/*.bin
+            radio/src/*.hex
+            *.bin
+            *.hex
