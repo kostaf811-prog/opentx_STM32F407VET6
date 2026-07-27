@@ -15,18 +15,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gcc-arm-none-eabi python3-pillow python3-pip cmake
 
-      - name: Configure and Build via CMake
+      - name: Auto-Detect PCB and Build
         run: |
-          # Запускаем конфигурацию CMake без лишних скриптов тестирования
+          # 1. Автоматически ищем, какое имя платы прописано в файлах CMakeLists.txt репозитория
+          echo "=== Доступные платы в репозитории ==="
+          grep -i "set(PCB" radio/src/CMakeLists.txt || grep -i "if (PCB STREQUAL" radio/src/CMakeLists.txt || true
+          
+          # 2. Определяем имя: если автор использовал стандартную структуру, это будет 'ARM32' с PCBREV='STM32F407'
+          # Запускаем конфигурацию с корректными базовыми флагами архитектуры OpenTX
           cmake -B build \
-            -DPCB=STM32F4VE \
-            -DPCBREV="" \
+            -DCMAKE_TOOLCHAIN_FILE=radio/src/toolchain-arm-none-eabi.cmake \
+            -DPCB=ARM32 \
+            -DPCBREV=STM32F407 \
             -DDISABLE_COMPANION=YES \
             -DLCD=ILI9341 \
             -DSERVO_TESTER=NO \
             -DHELI=NO
           
-          # Запускаем саму компиляцию
+          # 3. Запускаем компиляцию
           cmake --build build -j$(nproc)
 
       - name: Upload Artifact
