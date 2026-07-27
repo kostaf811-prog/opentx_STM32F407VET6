@@ -10,27 +10,29 @@ jobs:
         with:
           ref: '2.3'
 
-      - name: Install Compiler and Build via Make
+      - name: Install System Dependencies
         run: |
-          # 1. Ставим проверенный компилятор напрямую из репозитория системы
           sudo apt-get update
-          sudo apt-get install -y gcc-arm-none-eabi python3-pillow python3-pip
+          sudo apt-get install -y gcc-arm-none-eabi python3-pillow python3-pip cmake
+
+      - name: Configure and Build via CMake
+        run: |
+          # Запускаем конфигурацию CMake без лишних скриптов тестирования
+          cmake -B build \
+            -DPCB=STM32F4VE \
+            -DPCBREV="" \
+            -DDISABLE_COMPANION=YES \
+            -DLCD=ILI9341 \
+            -DSERVO_TESTER=NO \
+            -DHELI=NO
           
-          # 2. Переходим в папку с исходниками радио и запускаем Make в обход CMake
-          cd radio/src
-          make \
-            -j$(nproc) \
-            PCB=STM32F4VE \
-            PCBREV= \
-            DISABLE_COMPANION=YES \
-            LCD=ILI9341
+          # Запускаем саму компиляцию
+          cmake --build build -j$(nproc)
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: opentx-stm32f407-firmware
           path: |
-            radio/src/*.bin
-            radio/src/*.hex
-            *.bin
-            *.hex
+            build/*.bin
+            build/*.hex
