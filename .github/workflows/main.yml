@@ -13,26 +13,21 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-arm-none-eabi python3-pillow python3-pip cmake
+          sudo apt-get install -y gcc-arm-none-eabi python3-pillow python3-pip cmake make
 
-      - name: Auto-Detect PCB and Build
+      - name: Configure and Build OpenTX
         run: |
-          # 1. Автоматически ищем, какое имя платы прописано в файлах CMakeLists.txt репозитория
-          echo "=== Доступные платы в репозитории ==="
-          grep -i "set(PCB" radio/src/CMakeLists.txt || grep -i "if (PCB STREQUAL" radio/src/CMakeLists.txt || true
-          
-          # 2. Определяем имя: если автор использовал стандартную структуру, это будет 'ARM32' с PCBREV='STM32F407'
-          # Запускаем конфигурацию с корректными базовыми флагами архитектуры OpenTX
+          # Настраиваем проект под плату X9D+ с использованием ARM-компилятора
           cmake -B build \
-            -DCMAKE_TOOLCHAIN_FILE=radio/src/toolchain-arm-none-eabi.cmake \
-            -DPCB=ARM32 \
-            -DPCBREV=STM32F407 \
+            -DCMAKE_C_COMPILER=arm-none-eabi-gcc \
+            -DCMAKE_CXX_COMPILER=arm-none-eabi-g++ \
+            -DPCB=X9D+ \
             -DDISABLE_COMPANION=YES \
             -DLCD=ILI9341 \
             -DSERVO_TESTER=NO \
             -DHELI=NO
           
-          # 3. Запускаем компиляцию
+          # Запускаем компиляцию
           cmake --build build -j$(nproc)
 
       - name: Upload Artifact
