@@ -3,17 +3,18 @@ on: workflow_dispatch
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 # Используем более стабильную версию ОС
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.2.2  # Обновленная версия без предупреждений Node.js
+        uses: actions/checkout@v4
         with:
           ref: '2.3'
 
-      - name: Install ARM Toolchain and Build
+      - name: Install Correct Compiler and Build
         run: |
-          curl -L -s "https://arm.com" | tar -xJ
-          cmake -B build -DCMAKE_C_COMPILER=$(pwd)/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc -DCMAKE_CXX_COMPILER=$(pwd)/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-g++ -DPCB=STM32F4VE -DPCBREV= -DDISABLE_COMPANION=YES -DLCD=ILI9341
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi maxmod python3-pip
+          cmake -B build -DPCB=STM32F4VE -DPCBREV= -DDISABLE_COMPANION=YES -DLCD=ILI9341
           cmake --build build -j$(nproc)
 
       - name: Upload Artifact
